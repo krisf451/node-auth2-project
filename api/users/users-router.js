@@ -17,7 +17,7 @@ const { restricted, only } = require("../auth/auth-middleware.js");
     }
   ]
  */
-router.get("/", (req, res, next) => {
+router.get("/", restricted, (req, res, next) => {
   // done for you
   Users.find()
     .then((users) => {
@@ -41,7 +41,7 @@ router.get("/", (req, res, next) => {
     }
   ]
  */
-router.get("/:user_id", (req, res, next) => {
+router.get("/:user_id", restricted, only("admin"), (req, res, next) => {
   // done for you
   Users.findById(req.params.user_id)
     .then((user) => {

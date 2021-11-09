@@ -1,6 +1,9 @@
 const router = require("express").Router();
-const { checkUsernameExists, validateRoleName } = require('./auth-middleware');
+const bcrypt = require("bcryptjs");
+const tokenBuilder = require("./token-builder");
+const { checkUsernameExists, validateRoleName } = require("./auth-middleware");
 const { JWT_SECRET } = require("../secrets"); // use this secret!
+const Users = require("../users/users-model");
 
 router.post("/register", validateRoleName, (req, res, next) => {
   /**
@@ -15,7 +18,6 @@ router.post("/register", validateRoleName, (req, res, next) => {
     }
    */
 });
-
 
 router.post("/login", checkUsernameExists, (req, res, next) => {
   /**
@@ -37,6 +39,21 @@ router.post("/login", checkUsernameExists, (req, res, next) => {
       "role_name": "admin" // the role of the authenticated user
     }
    */
+  const { username, password } = req.body;
+  Users.findBy({ username })
+    .then(([user]) => {
+      if (user && bcrypt.compareSync(password, user.password)) {
+        //CREATING TOKEN AND APPEND IT TO RESPONSE HERE
+        const token = tokenBuilder(user);
+        res.status(200).json({
+          message: `Welcome back ${user.username}!`,
+          token,
+        });
+      } else {
+        next({ status: 401, message: "Invalid Credentials" });
+      }
+    })
+    .catch(next);
 });
 
 module.exports = router;

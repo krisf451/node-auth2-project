@@ -18,7 +18,7 @@ const restricted = (req, res, next) => {
 
     Put the decoded token in the req object, to make life easier for middlewares downstream!
   */
-  const token = require.headers.authorization;
+  const token = req.headers.authorization;
   if (!token) {
     return next({ status: 401, message: "Token required" });
   }
