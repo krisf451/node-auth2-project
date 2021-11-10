@@ -2,7 +2,7 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const tokenBuilder = require("./token-builder");
 const { checkUsernameExists, validateRoleName } = require("./auth-middleware");
-const { JWT_SECRET, BCRYPT_ROUNDS } = require("../secrets"); // use this secret!
+const { JWT_SECRET } = require("../secrets"); // use this secret!
 const Users = require("../users/users-model");
 
 router.post("/register", validateRoleName, (req, res, next) => {
@@ -17,15 +17,12 @@ router.post("/register", validateRoleName, (req, res, next) => {
       "role_name": "angel"
     }
    */
-  const user = req.body;
-  const rounds = process.env.BCRYPT_ROUNDS || 6;
-  const hash = bcrypt.hashSync(user.password, rounds);
-
-  user.password = hash;
-
-  Users.add(user)
-    .then((saved) => {
-      res.status(201).json({ message: `Great to have you, ${saved.username}` });
+  let { username, password } = req.body;
+  const { role_name } = req;
+  const hash = bcrypt.hashSync(password, 6);
+  Users.add({ username, password: hash, role_name })
+    .then((newUser) => {
+      res.status(201).json(newUser);
     })
     .catch(next);
 });
